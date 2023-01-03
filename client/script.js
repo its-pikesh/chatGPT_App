@@ -55,7 +55,7 @@ const handleSubmit = async (e) => {
   const data = new FormData(form);
   //user chat stripe
   console.log(data, "data");
-  chatContainer.innerHTML += chatStripe(false, data.get("promt"));
+  chatContainer.innerHTML += chatStripe(false, data.get("prompt"));
   form.reset();
 
   //bot chat stripe
@@ -66,6 +66,28 @@ const handleSubmit = async (e) => {
 
   const messageDiv = document.getElementById(uniqueId);
   loader(messageDiv);
+
+  //fetch
+  const response = await fetch("http://localhost:5000", {
+    method: "post",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt: data.get("prompt"),
+    }),
+  });
+  clearInterval(loadInterval);
+  messageDiv.innerHTML = "";
+  if (response.ok) {
+    const data = await response.json();
+    const parsedData = data.bot.trim();
+    typeText(messageDiv, parsedData);
+  } else {
+    const err = await response.text();
+    messageDiv.innerHTML = "Something Went Wrong";
+    alert(error);
+  }
 };
 
 form.addEventListener("submit", handleSubmit);
